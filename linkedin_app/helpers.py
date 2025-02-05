@@ -11,6 +11,22 @@ load_dotenv()
 LINKEDIN_API_URL = os.getenv("LINKEDIN_API_URL")
 LINKEDIN_APP_VERSION = os.getenv("LINKEDIN_APP_VERSION")
 
+def get_social_user_from_token(access_token):
+    """
+    Retrieves the SocialUser associated with the given access token.
+    Args:
+        access_token (str): LinkedIn API access token.
+    Returns:
+        SocialUser: The associated social user.
+    """
+    auth_instance = LinkedinAuth.objects.filter(access_token=access_token).first()
+    if auth_instance:
+        return auth_instance
+    return None
+
+
+
+
 def fetch_and_insert_linkedin_country_data(access_token):
     """
     Fetches LinkedIn country data and inserts it into the database.
@@ -30,7 +46,7 @@ def fetch_and_insert_linkedin_country_data(access_token):
         raise Exception("Failed to fetch data from LinkedIn API")
 
     analytics_data = response.json()
-
+    user = get_social_user_from_token(access_token)
     countries = []
     for element in analytics_data.get('elements', []):
         if 'name' in element:
@@ -40,7 +56,8 @@ def fetch_and_insert_linkedin_country_data(access_token):
                 'country_name': element['name']['value'],
                 'country_group': element.get('countryGroup'),
                 'urn': element.get('$URN'),
-                'country_code': element.get('countryCode')
+                'country_code': element.get('countryCode'),
+                'user': user
             }
             countries.append(country_data)
 
@@ -70,6 +87,7 @@ def fetch_and_insert_linkedin_country_group_data(access_token):
         raise Exception("Failed to fetch data from LinkedIn API")
 
     analytics_data = response.json()
+    user = get_social_user_from_token(access_token)
 
     country_groups = []
     for element in analytics_data.get('elements', []):
@@ -79,7 +97,8 @@ def fetch_and_insert_linkedin_country_group_data(access_token):
                 'locale_country': element['name']['locale']['country'],
                 'locale_language': element['name']['locale']['language'],
                 'country_group': element['name']['value'],
-                'country_group_code': element.get('countryGroupCode')
+                'country_group_code': element.get('countryGroupCode'),
+                'user':user
             }
             country_groups.append(country_group_data)
 
@@ -111,6 +130,7 @@ def fetch_and_insert_linkedin_followers_data(access_token):
     LinkedinFollowers.objects.all().delete()
 
     analytics_data = response.json()
+    user = get_social_user_from_token(access_token)
 
     # Get the current datetime
     load_datetime = timezone.now()
@@ -124,7 +144,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'staffCountRange',
-                    'data_type_id': item['staffCountRange']
+                    'data_type_id': item['staffCountRange'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -135,7 +156,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'Function',
-                    'data_type_id': item['function']
+                    'data_type_id': item['function'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -146,7 +168,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'Seniority',
-                    'data_type_id': item['seniority']
+                    'data_type_id': item['seniority'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -157,7 +180,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'AssociationType',
-                    'data_type_id': item['associationType']
+                    'data_type_id': item['associationType'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -168,7 +192,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'Industry',
-                    'data_type_id': item['industry']
+                    'data_type_id': item['industry'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -179,7 +204,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'Location',
-                    'data_type_id': item['geo']
+                    'data_type_id': item['geo'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -190,7 +216,8 @@ def fetch_and_insert_linkedin_followers_data(access_token):
                     'organic_follower_count': item['followerCounts']['organicFollowerCount'],
                     'paid_follower_count': item['followerCounts']['paidFollowerCount'],
                     'data_type': 'Country',
-                    'data_type_id': item['geo']
+                    'data_type_id': item['geo'],
+                    'user':user
                 }
                 LinkedinFollowers.objects.create(**data)
 
@@ -219,6 +246,8 @@ def fetch_and_insert_linkedin_followers_gain_data(access_token):
         raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
     analytics_data = response.json()
 
+    user = get_social_user_from_token(access_token)
+
     # Iterate over the data and insert into the database
     for element in analytics_data.get('elements', []):
         if 'followerGains' in element:
@@ -235,6 +264,7 @@ def fetch_and_insert_linkedin_followers_gain_data(access_token):
                 'organic_follower_gain': organic_follower_gain,
                 'paid_follower_gain': paid_follower_gain,
                 'organizational_entity': organizational_entity,
+                'user':user
             }
 
             # Create and save the new record
@@ -258,6 +288,8 @@ def fetch_and_insert_linkedin_functions_data(access_token):
         raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
     
     analytics_data = response.json()
+
+    user = get_social_user_from_token(access_token)
     
     # Prepare data for insertion
     for element in analytics_data.get('elements', []):
@@ -271,7 +303,8 @@ def fetch_and_insert_linkedin_functions_data(access_token):
                 'load_datetime': timezone.now(),
                 'urn': urn,
                 'function_id': function_id,
-                'function_name': function_name
+                'function_name': function_name,
+                'user':user
             }
             # Insert data into the model
             LinkedinFunctions.objects.create(**data)
@@ -294,6 +327,8 @@ def fetch_and_insert_linkedin_industries_data(access_token):
         raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
     
     analytics_data = response.json()
+
+    user = get_social_user_from_token(access_token)
     
     # Prepare data for insertion
     for element in analytics_data.get('elements', []):
@@ -307,7 +342,8 @@ def fetch_and_insert_linkedin_industries_data(access_token):
                 'load_datetime': timezone.now(),
                 'urn': urn,
                 'industry_id': industry_id,
-                'industry_name': industry_name
+                'industry_name': industry_name,
+                'user':user
             }
             # Insert data into the model
             LinkedinIndustries.objects.create(**data)
@@ -331,6 +367,8 @@ def fetch_and_insert_linkedin_regions_data(access_token):
 
     analytics_data = response.json()
 
+    user = get_social_user_from_token(access_token)
+
     # Iterate over the data and insert records into the database
     for element in analytics_data.get('elements', []):
         if 'name' in element:
@@ -346,7 +384,8 @@ def fetch_and_insert_linkedin_regions_data(access_token):
                 'country': element.get('country', ''),
                 'region_id': element.get('id', None),
                 'urn': element.get('$URN', ''),
-                'states': state_info
+                'states': state_info,
+                'user':user
             }
 
             # Insert data into the LinkedInRegionsKS model
@@ -372,6 +411,8 @@ def fetch_and_insert_linkedin_seniorities_data(access_token):
 
     analytics_data = response.json()
 
+    user = get_social_user_from_token(access_token)
+
     # Truncate the table
     LinkedinSeniorities.objects.all().delete()
 
@@ -382,7 +423,8 @@ def fetch_and_insert_linkedin_seniorities_data(access_token):
                 'urn': element.get('$URN', ''),
                 'seniority_id': element.get('id', None),
                 'seniority_name': element.get('name', {}).get('localized', {}).get('en_US', ''),
-                'load_datetime': timezone.now()
+                'load_datetime': timezone.now(),
+                'user':user
             }
 
             # Use Django ORM to create the record using the data dictionary
@@ -408,6 +450,8 @@ def fetch_and_insert_linkedin_location_data(access_token):
     LinkedinLocation.objects.all().delete()
     
     analytics_data = response.json()
+
+    user = get_social_user_from_token(access_token)
     
     # Extract geo IDs from the follower counts
     geo_locations = []
@@ -442,7 +486,8 @@ def fetch_and_insert_linkedin_location_data(access_token):
             'load_datetime': timezone.now(),
             'urn': f'urn:li:geo:{geo_id}',
             'geo_id': geo_id,
-            'city': city
+            'city': city,
+            'user':user
         }
         
         # Insert data into the model
@@ -469,6 +514,8 @@ def fetch_and_insert_linkedin_posts_statistics(access_token):
         return
 
     posts_data = response.json()
+
+    user = get_social_user_from_token(access_token)
 
     # Extract post IDs
     post_ids = [post['id'] for post in posts_data.get('elements', [])]
@@ -530,7 +577,8 @@ def fetch_and_insert_linkedin_posts_statistics(access_token):
             'impression_count': impression_count,
             'engagement_rate': engagement_rate,
             'click_through_rate': click_through_rate,
-            'load_datetime': timezone.now()
+            'load_datetime': timezone.now(),
+            'user':user
         }
         # Create a new record using the data dictionary
         LinkedinPostsStatistics.objects.create(**data)

@@ -1,26 +1,18 @@
 from django.db import models
 
-class AuthProvider(models.TextChoices):
-    GOOGLE = "google", "Google"
-    INSTAGRAM = "instagram", "Instagram"
-    FACEBOOK = "facebook", "Facebook"
-    LINKEDIN = "linkedin", "LinkedIn"
-
-class SocialAuthToken(models.Model):
-    email = models.EmailField(unique=True)
-    access_token = models.TextField(null=True, blank=True)
-    refresh_token = models.TextField(null=True, blank=True)
-    expires_in = models.IntegerField(help_text="Expiration time in seconds", null=True, blank=True)
+class BaseModel(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
-    provider = models.CharField(
-        max_length=10,
-        choices=AuthProvider.choices,
-        default=AuthProvider.GOOGLE,
-    )
 
     class Meta:
-        db_table = "auth_token"
+        abstract = True  # This makes it an abstract model (no table is created)
+        db_table = 'base_model'  # Custom table name for metadata purposes
+
+class SocialUser(BaseModel):
+    email = models.EmailField(primary_key=True, unique=True)
+
+    class Meta:
+        db_table = 'social_user'  # Custom table name
 
     def __str__(self):
-        return f"{self.email} ({self.provider})"
+        return self.email

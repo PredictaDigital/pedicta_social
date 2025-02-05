@@ -1,7 +1,8 @@
+# serializers.py
 from rest_framework import serializers
-from .models import AuthModel
+from .models import SocialUser
 
-class AuthModelSerializer(serializers.ModelSerializer):
+class SocialUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AuthModel
-        fields = '__all__'
+        model = SocialUser
+        fields = ['email']  # Include other fields as needed, e.g., 'created_on', 'updated_on' are auto-managed

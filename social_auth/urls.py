@@ -1,7 +1,7 @@
+# urls.py
 from django.urls import path
-from .views import AuthAPIView, LinkedRefreshTokenAPIView
+from .views import SocialUserCreateView
 
 urlpatterns = [
-    path('auth-token/', AuthAPIView.as_view(), name='auth-token/'),
-    path('Linked-refresh-token/', LinkedRefreshTokenAPIView.as_view(), name='linked_refresh_token'),
+    path('user-register/', SocialUserCreateView.as_view(), name='create_social_user'),
 ]
