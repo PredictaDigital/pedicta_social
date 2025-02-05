@@ -1,0 +1,2 @@
+# pedicta_social
+Linkdin
