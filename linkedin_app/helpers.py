@@ -21,7 +21,7 @@ def get_social_user_from_token(access_token):
     """
     auth_instance = LinkedinAuth.objects.filter(access_token=access_token).first()
     if auth_instance:
-        return auth_instance
+        return auth_instance.social_user
     return None
 
 
