@@ -2,7 +2,7 @@
 import requests
 from .models import *
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
 
@@ -582,3 +582,72 @@ def fetch_and_insert_linkedin_posts_statistics(access_token):
         }
         # Create a new record using the data dictionary
         LinkedinPostsStatistics.objects.create(**data)
+
+
+def fetch_and_insert_linkedin_followers_gain_data_separate(access_token):
+    user = get_social_user_from_token(access_token)
+
+    # Fetch the latest entry for the user
+    latest_entry = LinkedinFollowersGainStatistics.objects.filter(user=user).order_by('-end_date').first()
+
+    # Calculate start and end timestamps in epoch format
+    if latest_entry:
+        # If data exists, start from the latest end_date and go forward 60 days
+        start_date = latest_entry.end_date
+        end_date = start_date + timedelta(days=60)
+    else:
+        # If no data exists, fetch data from the last year
+        start_date = timezone.now().date() - timedelta(days=365)
+        end_date = start_date + timedelta(days=60)
+
+    # Ensure end_date does not exceed the current date
+    end_date = min(end_date, timezone.now().date())
+
+    # Convert dates to LinkedIn API epoch format (milliseconds)
+    start_timestamp = int(start_date.strftime('%s')) * 1000
+    end_timestamp = int(end_date.strftime('%s')) * 1000
+
+    # Define the API endpoint dynamically
+    analytics_url = (
+        f'{LINKEDIN_API_URL}/rest/organizationalEntityFollowerStatistics'
+        f'?q=organizationalEntity'
+        f'&organizationalEntity=urn:li:organization:13701784'
+        f'&timeIntervals.timeGranularityType=DAY'
+        f'&timeIntervals.timeRange.start={start_timestamp}'
+        f'&timeIntervals.timeRange.end={end_timestamp}'
+    )
+
+    headers = {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'LinkedIn-Version': LINKEDIN_APP_VERSION,
+    }
+
+    # Retrieve data from LinkedIn API
+    response = requests.get(analytics_url, headers=headers)
+    if response.status_code != 200:
+        raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
+    
+    analytics_data = response.json()
+
+    # Iterate over the data and insert into the database
+    for element in analytics_data.get('elements', []):
+        if 'followerGains' in element:
+            time_range_start = datetime.fromtimestamp(element['timeRange']['start'] / 1000)
+            time_range_end = datetime.fromtimestamp(element['timeRange']['end'] / 1000)
+            organic_follower_gain = element['followerGains'].get('organicFollowerGain')
+            paid_follower_gain = element['followerGains'].get('paidFollowerGain')
+            organizational_entity = element.get('organizationalEntity')
+
+            # Prepare data for creation
+            data = {
+                'start_date': time_range_start.date(),
+                'end_date': time_range_end.date(),
+                'organic_follower_gain': organic_follower_gain,
+                'paid_follower_gain': paid_follower_gain,
+                'organizational_entity': organizational_entity,
+                'user': user
+            }
+
+            # Create and save the new record
+            LinkedinFollowersGainStatistics.objects.create(**data)

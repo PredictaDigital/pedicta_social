@@ -18,9 +18,7 @@ class LinkedinAPIView(APIView):
             if not auth_instance or not auth_instance.access_token:
                 return Response({"error": "No LinkedIn access token found for this email"}, status=status.HTTP_404_NOT_FOUND)
             access_token = auth_instance.access_token
-            
             print("Country_data")
-           
             fetch_and_insert_linkedin_country_data(access_token)
             print("Country Group Data")
             fetch_and_insert_linkedin_country_group_data(access_token)
@@ -40,6 +38,8 @@ class LinkedinAPIView(APIView):
             fetch_and_insert_linkedin_location_data(access_token)
             print("insert_linkedin_posts_statistics")
             fetch_and_insert_linkedin_posts_statistics(access_token)
+            print("linkedin_followers_gain_data_separate")
+            fetch_and_insert_linkedin_followers_gain_data_separate(access_token)
             return Response({"message": "Data fetched and inserted successfully"}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
