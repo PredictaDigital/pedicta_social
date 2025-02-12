@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import FBAdsInsightAgeGender
-from .utils import get_fb_oauth_details  # Import the utility function
+from .utils import get_fb_oauth_details, get_social_user
 import json
 import time
 from calendar import monthrange
@@ -13,7 +13,7 @@ from calendar import monthrange
 class FetchAdInsightsViewbyAgeGender(APIView):
     def get(self, request):
         # Fetch the access token and ad account ID using the utility function
-        email = request.COOKIES.get('email') 
+        email = request.query_params.get('email', None)
         fb_details = get_fb_oauth_details(email)
 
         if not fb_details:
@@ -88,6 +88,7 @@ class FetchAdInsightsViewbyAgeGender(APIView):
 
         # Parse and save insights
         insights = response.json().get("data", [])
+        user = get_social_user(email)
         
         # Save insights to the database (if needed)
         for insight in insights:
@@ -119,6 +120,7 @@ class FetchAdInsightsViewbyAgeGender(APIView):
                 data_created_time=current_time,
                 age = insight.get("age", 'null'),
                 gender = insight.get("gender", 'null'),
+                social_user=user
             )
 
         # Prepare the response data

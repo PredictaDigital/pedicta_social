@@ -5,14 +5,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import FacebookCampaignInsight  # Ensure this model can handle country and region breakdowns
-from .utils import get_fb_oauth_details
+from .utils import get_fb_oauth_details, get_social_user
 import json
 import time
 
 class FetchAdInsightsByCampaigns(APIView):
     def get(self, request):
         # Fetch the access token and ad account ID using the utility function
-        email = request.COOKIES.get('email')
+        email = request.query_params.get('email', None)
         fb_details = get_fb_oauth_details(email)
 
         if not fb_details:
@@ -86,34 +86,37 @@ class FetchAdInsightsByCampaigns(APIView):
 
         # Parse and save insights
         insights = response.json().get("data", [])
+
+        user = get_social_user(email)
         
         # Save insights to the database (including breakdowns for country and region)
-        # for insight in insights:
-        #     # Extract insight fields and store them in the database
-        #     FacebookCampaignInsight.objects.create(
-        #         campaign_name=insight.get('campaign_name'),
-        #         objective=insight.get('objective'),
-        #         status=insight.get('status'),
-        #         campaign_id=insight.get('campaign_id'),
-        #         account_id=insight.get('account_id'),
-        #         created_time=insight.get('created_time'),
-        #         updated_time=insight.get('updated_time'),
-        #         start_time=insight.get('start_time'),
-        #         stop_time=insight.get('stop_time', today),
-        #         buying_type=insight.get('buying_type'),
-        #         effective_status=insight.get('effective_status'),
-        #         clicks=insight.get('clicks', 0),
-        #         cpc=insight.get('cpc', 0),
-        #         cpm=insight.get('cpm', 0),
-        #         ctr=insight.get('ctr', 0),
-        #         frequency=insight.get('frequency', 0),
-        #         impressions=insight.get('impressions', 0),
-        #         reach=insight.get('reach', 0),
-        #         spend=insight.get('spend', 0),
-        #         skan_campaign_id=insight.get('skan_campaign_id', ''),
-        #         data_created_date=today.strftime('%Y-%m-%d'),
-        #         data_created_time=current_time
-        #     )
+        for insight in insights:
+            # Extract insight fields and store them in the database
+            FacebookCampaignInsight.objects.create(
+                campaign_name=insight.get('campaign_name'),
+                objective=insight.get('objective'),
+                status=insight.get('status'),
+                campaign_id=insight.get('campaign_id'),
+                account_id=insight.get('account_id'),
+                created_time=insight.get('created_time'),
+                updated_time=insight.get('updated_time'),
+                start_time=insight.get('start_time'),
+                stop_time=insight.get('stop_time', today),
+                buying_type=insight.get('buying_type'),
+                effective_status=insight.get('effective_status'),
+                clicks=insight.get('clicks', 0),
+                cpc=insight.get('cpc', 0),
+                cpm=insight.get('cpm', 0),
+                ctr=insight.get('ctr', 0),
+                frequency=insight.get('frequency', 0),
+                impressions=insight.get('impressions', 0),
+                reach=insight.get('reach', 0),
+                spend=insight.get('spend', 0),
+                skan_campaign_id=insight.get('skan_campaign_id', ''),
+                data_created_date=today.strftime('%Y-%m-%d'),
+                data_created_time=current_time,
+                social_user=user
+            )
 
         # Prepare the response data
         response_data = {

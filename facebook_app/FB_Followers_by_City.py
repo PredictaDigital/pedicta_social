@@ -3,7 +3,7 @@ from datetime import timedelta, datetime
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .utils import get_fb_oauth_details
+from .utils import get_fb_oauth_details, get_social_user
 from .models import FacebookFollowersbycity
 import json
 import time  # Import time module for measuring load time
@@ -24,7 +24,7 @@ class FetchFollowersCity(APIView):
         start_time = time.time()  # Start measuring time
 
         # Fetch the access token and page ID using the utility function
-        email = request.COOKIES.get('email')
+        email = request.query_params.get('email', None)
         fb_details = get_fb_oauth_details(email)
 
         if not fb_details:
@@ -87,6 +87,8 @@ class FetchFollowersCity(APIView):
 
         # Parse the response data
         analytics_data = response.json()
+
+        user = get_social_user(email)
         
         # Collect the insights data in a list (instead of saving it to the database)
         insights = []
@@ -104,7 +106,8 @@ class FetchFollowersCity(APIView):
                         follower_count=count,
                         end_time=end_time,
                         data_created_date=today.strftime('%Y-%m-%d'),
-                        data_created_time=time.strftime("%H:%M:%S")
+                        data_created_time=time.strftime("%H:%M:%S"),
+                        social_user=user
                     )
 
                 # Append the data to the insights list for response

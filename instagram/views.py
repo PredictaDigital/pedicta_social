@@ -10,39 +10,39 @@ from datetime import datetime, timedelta
 import requests
 import time
 from django.conf import settings
-
-# Utility function to get OAuth details for Facebook or Instagram
-def get_fb_oauth_details(request):
-    """
-    Retrieve the latest Facebook OAuth details based on the provided email.
-    Returns a dictionary of details or None if no data is found.
-    """
-    email = request.COOKIES.get('email')
-    fb_oauth = FB_Oauth.objects.filter(email=email).order_by('-id').first()  # Get the latest entry
-    if not fb_oauth:
-        return None
-    return {
-        "access_token": fb_oauth.access_token,
-        "page_id": fb_oauth.page_id,
-        "ad_account": fb_oauth.ad_accounts,
-        "business_profiles": fb_oauth.business_profiles,
-        "instagram_account": fb_oauth.instagram_account,
-        "email": fb_oauth.email
-    }
+from facebook_app.utils import get_fb_oauth_details, get_social_user
+# # Utility function to get OAuth details for Facebook or Instagram
+# def get_fb_oauth_details(request):
+#     """
+#     Retrieve the latest Facebook OAuth details based on the provided email.
+#     Returns a dictionary of details or None if no data is found.
+#     """
+#     email = request.COOKIES.get('email')
+#     fb_oauth = FB_Oauth.objects.filter(email=email).order_by('-id').first()  # Get the latest entry
+#     if not fb_oauth:
+#         return None
+#     return {
+#         "access_token": fb_oauth.access_token,
+#         "page_id": fb_oauth.page_id,
+#         "ad_account": fb_oauth.ad_accounts,
+#         "business_profiles": fb_oauth.business_profiles,
+#         "instagram_account": fb_oauth.instagram_account,
+#         "email": fb_oauth.email
+#     }
 
 # Function to fetch Instagram Media Insights
-def fetch_instagram_insights(request):
+def fetch_instagram_insights(email):
     """
     Fetch Instagram insights from the Graph API and save them in the database.
     Returns a list of processed data.
     """
-    fb_oauth_details = get_fb_oauth_details(request)
+    fb_oauth_details = get_fb_oauth_details(email)
     if not fb_oauth_details:
         return []
 
-    access_token = fb_oauth_details['access_token']
-    page_id = fb_oauth_details['instagram_account']
-    email = fb_oauth_details['email']
+    access_token = fb_oauth_details.get('access_token')
+    page_id = fb_oauth_details.get('instagram_account')
+    email = email
     
     endpoint = f"https://graph.facebook.com/v22.0/{page_id}/media"
     params = {
@@ -78,6 +78,8 @@ def fetch_instagram_insights(request):
             def get_insight_value(insight_name):
                 return next((insight['values'][0]['value'] for insight in insights if insight['name'] == insight_name), 0)
 
+            user = get_social_user(email)
+
             # Save data in Django model
             post = InstagramMediaInsight.objects.create(
                 ig_id=item.get("ig_id"),
@@ -104,6 +106,7 @@ def fetch_instagram_insights(request):
                 follows=get_insight_value("follows"),
                 data_created_date=current_date,  # Store the current date
                 data_created_time=current_time,  # Store the current time
+                social_user=user
             )
 
             all_data.append({
@@ -119,18 +122,18 @@ def fetch_instagram_insights(request):
 
     return all_data
 
-def fetch_insta_page_insights(request):
+def fetch_insta_page_insights(email):
     """
     Fetch Facebook Page Insights from the Graph API and save them in the database.
     Returns a list of processed data.
     """
-    fb_oauth_details = get_fb_oauth_details(request)
+    fb_oauth_details = get_fb_oauth_details(email)
     if not fb_oauth_details:
         return []
 
-    access_token = fb_oauth_details['access_token']
-    insta_id = fb_oauth_details['instagram_account']  # Instagram account ID
-    email = fb_oauth_details['email']
+    access_token = fb_oauth_details.get('access_token')
+    page_id = fb_oauth_details.get('instagram_account')
+    email = email
 
     # Get the latest stored date in the database
     created_at = None
@@ -151,7 +154,7 @@ def fetch_insta_page_insights(request):
     print("Fetching data from:", since_date, "to", until_date)
 
     # Define the API endpoint and parameters
-    endpoint = f"https://graph.facebook.com/v21.0/{insta_id}/insights"
+    endpoint = f"https://graph.facebook.com/v21.0/{page_id}/insights"
     params = {
         'access_token': access_token,
         'metric': 'follower_count,impressions,reach',
@@ -169,7 +172,7 @@ def fetch_insta_page_insights(request):
         analytics_data = response.json()
 
         if 'data' not in analytics_data:
-            print(f"No insights data found for Instagram account {insta_id}")
+            print(f"No insights data found for Instagram account {page_id}")
             break
 
         list_type_data = analytics_data.get('data', [])
@@ -194,16 +197,19 @@ def fetch_insta_page_insights(request):
         # Insert unique data into the database
         today = datetime.now().date()
 
+        user = get_social_user(email)
+
         for end_time, metrics in result_data.items():
             post = InstagramPageInsight.objects.create(
                 end_time=end_time,
                 follower_count=metrics.get('follower_count', 0),
                 impressions=metrics.get('impressions', 0),
                 reach=metrics.get('reach', 0),
-                page_id=insta_id,
+                page_id=page_id,
                 email=email,
                 data_created_date=today,  # Store the current date
                 data_created_time=datetime.now().strftime('%H:%M:%S'),  # Store the current time
+                social_user=user
             )
 
             all_data.append({
@@ -225,17 +231,17 @@ def fetch_insta_page_insights(request):
     return all_data
 
 
-def fetch_page_summary(request):
+def fetch_page_summary(email):
     """
     Fetch Facebook Page Insights, store them in the Django model, and print the data.
     """
-    fb_oauth_details = get_fb_oauth_details(request)
+    fb_oauth_details = get_fb_oauth_details(email)
     if not fb_oauth_details:
         return {"error": "OAuth details not found"}
 
-    access_token = fb_oauth_details['access_token']
-    page_id = fb_oauth_details['instagram_account']  # Instagram account ID
-    email = fb_oauth_details['email']
+    access_token = fb_oauth_details.get('access_token')
+    page_id = fb_oauth_details.get('instagram_account')
+    email = email
 
     # Define the API endpoint and parameters
     API_VERSION = 'v22.0'
@@ -253,6 +259,9 @@ def fetch_page_summary(request):
 
     # Print fetched data
     print("Fetched Instagram Page Insights:")
+
+    user = get_social_user(email)
+
     for key, value in analytics_data.items():
         print(f"{key}: {value}")
 
@@ -272,6 +281,7 @@ def fetch_page_summary(request):
             "created_at": datetime.now().date(),
             "data_created_date":datetime.now().date(),  # Store the current date
             "data_created_time":datetime.now().strftime('%H:%M:%S'),  # Store the current time
+            "social_user":user
         }
     )
 
@@ -284,16 +294,20 @@ class FetchSocialMediaInsightsView(APIView):
     """
     def get(self, request):
         # Fetch data
+        email = request.query_params.get('email', None)
+        if not email:
+            return Response({"error": "Missing email or code in query parameters"}, status=status.HTTP_400_BAD_REQUEST)
+    
         start_time = time.time()  # Start the timer
 
-        instagram_data = fetch_instagram_insights(request)
-        instagram_Page_insigths = fetch_insta_page_insights(request)
-        instagram_Page_statitsics = fetch_page_summary(request)
+        instagram_data = fetch_instagram_insights(email)
+        instagram_Page_insigths = fetch_insta_page_insights(email)
+        instagram_Page_statitsics = fetch_page_summary(email)
 
         end_time = time.time()  # End the timer
         execution_time = end_time - start_time  # Calculate total execution time
 
-        # If no data is returned, handle it gracefully
+        If no data is returned, handle it gracefully
         if not instagram_data and not instagram_Page_insigths and not instagram_Page_statitsics:
             return Response({"message": "No data available"}, status=status.HTTP_204_NO_CONTENT)
 

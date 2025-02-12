@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import FBAdsInsight
-from .utils import get_fb_oauth_details  # Import the utility function
+from .utils import get_fb_oauth_details, get_social_user
 import json
 import time
 from calendar import monthrange
@@ -13,7 +13,7 @@ from calendar import monthrange
 class FetchAdInsightsView(APIView):
     def get(self, request):
         # Fetch the access token and ad account ID using the utility function
-        email = request.COOKIES.get('email') 
+        email = request.query_params.get('email', None)
         fb_details = get_fb_oauth_details(email)
 
         if not fb_details:
@@ -85,6 +85,8 @@ class FetchAdInsightsView(APIView):
 
         # Parse and save insights
         insights = response.json().get("data", [])
+
+        user = get_social_user(email)
         
         #Save insights to the database (if needed)
         for insight in insights:
@@ -113,7 +115,8 @@ class FetchAdInsightsView(APIView):
                 frequency=insight.get("frequency", 0.0),
                 unique_ctr=insight.get("unique_ctr", 0.0),
                 data_created_date=today.strftime('%Y-%m-%d'),
-                data_created_time=current_time
+                data_created_time=current_time,
+                social_user=user
             )
 
         # Prepare the response data

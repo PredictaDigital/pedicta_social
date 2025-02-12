@@ -1,7 +1,9 @@
 import requests
 from django.http import JsonResponse
 from django.views import View
-
+from .serializers import FB_OauthSerializer
+from rest_framework import generics
+from social_auth.models import SocialUser
 class GetAdAccountUsers(View):
 
     def get_ad_account_users(self, ad_account_id, page_access_token):
@@ -61,3 +63,9 @@ class GetAdAccountUsers(View):
             return JsonResponse({'error': 'No ad account found that is linked to the page'}, status=404)
 
         return JsonResponse({'error': f"Error: {ad_accounts_response.status_code}, {ad_accounts_response.text}"}, status=ad_accounts_response.status_code)
+
+
+
+class FacebookAuthCreateView(generics.CreateAPIView):
+    queryset = SocialUser.objects.all()
+    serializer_class = FB_OauthSerializer

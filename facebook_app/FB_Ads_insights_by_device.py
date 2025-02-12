@@ -5,14 +5,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import FBAdsInsightByDevice  # Make sure this is the correct model for device breakdowns
-from .utils import get_fb_oauth_details
+from .utils import get_fb_oauth_details, get_social_user
 import json
 import time
 
 class FetchAdInsightsByDeviceView(APIView):
     def get(self, request):
         # Fetch the access token and ad account ID using the utility function
-        email = request.COOKIES.get('email')
+        email = request.query_params.get('email', None)
         fb_details = get_fb_oauth_details(email)
 
         if not fb_details:
@@ -87,6 +87,8 @@ class FetchAdInsightsByDeviceView(APIView):
 
         # Parse and save insights
         insights = response.json().get("data", [])
+
+        user = get_social_user(email)
         
         # Save insights to the database (including breakdowns for devices)
         for insight in insights:
@@ -118,7 +120,8 @@ class FetchAdInsightsByDeviceView(APIView):
                 impression_device=insight.get("impression_device", ''),
                 device_platform=insight.get("device_platform", ''),
                 data_created_date=today.strftime('%Y-%m-%d'),
-                data_created_time=current_time
+                data_created_time=current_time,
+                social_user=user
             )
 
         # Prepare the response data

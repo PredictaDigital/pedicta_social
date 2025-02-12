@@ -20,6 +20,7 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('social_auth.urls')),
-    path('linkedin/', include('linkedin_app.urls'))
-    # path('facebook_app/', include('facebook_app.urls')),  # Include facebook_app routes
+    path('linkedin/', include('linkedin_app.urls')),
+    path('facebook_app/', include('facebook_app.urls')),
+    path('instagram/', include('instagram.urls')),
 ]

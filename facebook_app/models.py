@@ -1,6 +1,7 @@
 from django.db import models
+from social_auth.models import BaseModel,SocialUser
 
-class FBAdsInsight(models.Model):
+class FBAdsInsight(BaseModel):
     email = models.EmailField(max_length=50)
     account_id = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255)
@@ -28,13 +29,14 @@ class FBAdsInsight(models.Model):
     unique_ctr = models.DecimalField(max_digits=18, decimal_places=2, default=0.0)
     data_created_date = models.CharField(max_length=255)
     data_created_time = models.CharField(max_length=255)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Ads_Insights', on_delete=models.CASCADE)
 
 
     class Meta:
         db_table = 'FB_Ads_Insights'
 
 # FB Ads Insights Model by age & Gender
-class FBAdsInsightAgeGender(models.Model):
+class FBAdsInsightAgeGender(BaseModel):
     email = models.EmailField(max_length=50)
     account_id = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255)
@@ -64,6 +66,7 @@ class FBAdsInsightAgeGender(models.Model):
     unique_ctr = models.DecimalField(max_digits=18, decimal_places=2, default=0.0)
     data_created_date = models.CharField(max_length=255)
     data_created_time = models.CharField(max_length=255)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Ads_Insights_by_age_gender', on_delete=models.CASCADE)
 
 
     class Meta:
@@ -71,7 +74,7 @@ class FBAdsInsightAgeGender(models.Model):
 
 
 # FB Ads Insights Model by age & Gender
-class FBAdsInsightByDevice(models.Model):
+class FBAdsInsightByDevice(BaseModel):
     email = models.EmailField(max_length=50)
     account_id = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255)
@@ -101,6 +104,7 @@ class FBAdsInsightByDevice(models.Model):
     unique_ctr = models.DecimalField(max_digits=18, decimal_places=2, default=0.0)
     data_created_date = models.CharField(max_length=255)
     data_created_time = models.CharField(max_length=255)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Ads_Insights_by_device', on_delete=models.CASCADE)
 
 
     class Meta:
@@ -108,7 +112,7 @@ class FBAdsInsightByDevice(models.Model):
 
 
 # FB Ads Insights Model by age & Gender
-class FBAdsInsightByLocation(models.Model):
+class FBAdsInsightByLocation(BaseModel):
     email = models.EmailField(max_length=50)
     account_id = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255)
@@ -138,6 +142,7 @@ class FBAdsInsightByLocation(models.Model):
     unique_ctr = models.DecimalField(max_digits=18, decimal_places=2, default=0.0)
     data_created_date = models.CharField(max_length=255)
     data_created_time = models.CharField(max_length=255)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Ads_Insights_by_location', on_delete=models.CASCADE)
 
 
     class Meta:
@@ -145,7 +150,7 @@ class FBAdsInsightByLocation(models.Model):
 
 
 # FB Ads Insights Model by Campaign
-class FacebookCampaignInsight(models.Model):
+class FacebookCampaignInsight(BaseModel):
     email = models.EmailField(max_length=50)
     account_id = models.CharField(max_length=50)
     account_name = models.CharField(max_length=255)
@@ -175,13 +180,14 @@ class FacebookCampaignInsight(models.Model):
     unique_ctr = models.DecimalField(max_digits=18, decimal_places=2, default=0.0)
     data_created_date = models.CharField(max_length=255)
     data_created_time = models.CharField(max_length=255)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Campaign_insigths', on_delete=models.CASCADE)
 
 
     class Meta:
         db_table = 'FB_Campaign_insigths'
 
 #Facebook Followers
-class FacebookFollowersInsight(models.Model):
+class FacebookFollowersInsight(BaseModel):
     Id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     email = models.CharField(max_length=255)
     page_id = models.CharField(max_length=255)
@@ -189,12 +195,13 @@ class FacebookFollowersInsight(models.Model):
     PageFollows = models.IntegerField()    # Stores the number of page followers
     data_created_date = models.CharField(max_length=255)
     data_created_time = models.CharField(max_length=255)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Followers_statistics', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'FB_Followers_statistics'  # Table name in the database
 
 #Facebook Followers by city
-class FacebookFollowersbycity(models.Model):
+class FacebookFollowersbycity(BaseModel):
     id = models.AutoField(primary_key=True)  # Auto-incrementing primary key
     page_id = models.CharField(max_length=255)  # Page ID as a string
     email = models.EmailField(max_length=255)   # Email field
@@ -203,13 +210,14 @@ class FacebookFollowersbycity(models.Model):
     end_time = models.DateTimeField()           # End time as a DateTime field
     data_created_date = models.DateField()      # Date the data was created
     data_created_time = models.TimeField()      # Time the data was created
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Followers_by_city', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'FB_Followers_by_city'  # Table name in the database
 
 
 # Facebook Insight
-class FacebookInsights(models.Model):
+class FacebookInsights(BaseModel):
     page_id = models.CharField(max_length=255)  # Page ID as a string
     email = models.EmailField(max_length=255)   # Email field
     end_time = models.CharField(max_length=50)
@@ -241,27 +249,28 @@ class FacebookInsights(models.Model):
     page_actions_post_reactions_sorry_total = models.CharField(max_length=50, null=True, blank=True)
     data_created_date = models.DateField()      # Date the data was created
     data_created_time = models.TimeField()      # Time the data was created
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Insights', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'FB_Insights'  # Table name in the database
 
 
-class FB_Oauth(models.Model):
-    access_token = models.CharField(max_length=255)
+class FB_Oauth(BaseModel):
+    access_token = models.TextField(null=True, blank=True,)
     page_id = models.CharField(max_length=255)
     instagram_account = models.CharField(max_length=255)
     business_profiles = models.JSONField()
     ad_accounts = models.CharField(max_length=255)  # Ensure this is a CharField
-    email = models.EmailField()
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Oauth', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'FB_Oauth'  # Custom table name
     
-    @classmethod
-    def get_latest_token_by_email(cls, email):
-        """
-        Fetch the latest token entry for the given email.
-        """
-        return cls.objects.filter(email=email).order_by('-id').first()
+    # @classmethod
+    # def get_latest_token_by_email(cls, email):
+    #     """
+    #     Fetch the latest token entry for the given email.
+    #     """
+    #     return cls.objects.filter(email=email).order_by('-id').first()
 
    

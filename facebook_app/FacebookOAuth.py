@@ -37,12 +37,13 @@ class FacebookOAuth(APIView):
         scope = "email,pages_show_list,pages_manage_metadata,ads_management,ads_read,business_management,instagram_basic"  # Include Instagram and Business permissions
 
         # Create the authorization URL for Facebook OAuth
-        auth_url = f"https://www.facebook.com/v22.0/dialog/oauth?{urlencode({
-            'response_type': 'code',  # Get an authorization code
-            'client_id': client_id,  # Your Facebook App ID
-            'redirect_uri': redirect_uri,  # The callback URI after login
-            'scope': scope,  # Requested permissions
-        })}"
+        auth_url = "https://www.facebook.com/v22.0/dialog/oauth?" + urlencode({
+        "response_type": "code",  # Get an authorization code
+        "client_id": client_id,  # Your Facebook App ID
+        "redirect_uri": redirect_uri,  # The callback URI after login
+        "scope": scope  # Requested permissions
+        })
+
 
         # Perform the redirect to the Facebook OAuth authorization URL
         response['Location'] = auth_url

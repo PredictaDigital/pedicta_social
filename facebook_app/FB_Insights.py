@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 from datetime import timedelta, datetime
-from .utils import get_fb_oauth_details
+from .utils import get_fb_oauth_details,get_social_user
 from .models import FacebookInsights
 from django.db import IntegrityError
 from django.utils.timezone import now
@@ -27,7 +27,8 @@ def get_page_access_token(user_access_token, page_id):
 class FetchFBPageInsigths(APIView):
     def get(self, request):
 
-        email = request.COOKIES.get('email')
+        email = request.query_params.get('email', None)
+        print(email,'kohli>>>>>>>>>>...')
         fb_details = get_fb_oauth_details(email)
 
         if not fb_details:
@@ -86,6 +87,8 @@ class FetchFBPageInsigths(APIView):
         analytics_data = response.json()
         list_type_data = analytics_data.get('data')
 
+        user = get_social_user(email)
+
         # Prepare data for DB insertion
         result_data = {}
         for item in list_type_data:
@@ -132,7 +135,8 @@ class FetchFBPageInsigths(APIView):
                     page_actions_post_reactions_love_total=metrics.get("page_actions_post_reactions_love_total", 0),
                     page_actions_post_reactions_sorry_total=metrics.get("page_actions_post_reactions_sorry_total", 0),
                     data_created_date=now().date(),
-                    data_created_time=now().time()
+                    data_created_time=now().time(),
+                    social_user=user
                 )
             )
 
