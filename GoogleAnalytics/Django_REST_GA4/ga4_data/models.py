@@ -1,0 +1,50 @@
+
+
+from django.db import models
+
+class GA4Session(models.Model):
+    date = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
+    deviceCategory = models.CharField(max_length=50)
+    firstUserSourceMedium = models.CharField(max_length=50)
+    sessionSource = models.CharField(max_length=50)
+    sessions = models.IntegerField()
+    activeusers = models.IntegerField()
+    newUsers = models.IntegerField()
+    totalUsers = models.IntegerField()
+    bounceRate = models.FloatField()
+    averageSessionDuration = models.FloatField()
+    eventCount = models.IntegerField()
+    conversions = models.IntegerField()
+    screenPageViews = models.IntegerField()
+
+class GA4Event(models.Model):
+    date = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
+    deviceCategory = models.CharField(max_length=50)
+    firstUserSourceMedium = models.CharField(max_length=50)
+    sessionSource = models.CharField(max_length=50)
+    pagePath = models.CharField(max_length=100)
+    pageTitle = models.CharField(max_length=100)
+    eventName = models.CharField(max_length=50)
+    sessions = models.IntegerField()
+    activeusers = models.IntegerField()
+    newUsers = models.IntegerField()
+    totalUsers = models.IntegerField()
+    bounceRate = models.FloatField()
+    averageSessionDuration = models.FloatField()
+    eventCount = models.IntegerField()
+    conversions = models.IntegerField()
+    screenPageViews = models.IntegerField()
+
+class GA4WebPage(models.Model):
+    date = models.CharField(max_length=50)
+    country = models.CharField(max_length=50)
+    cityId = models.CharField(max_length=50)
+    city = models.CharField(max_length=50)
+    deviceCategory = models.CharField(max_length=50)
+    pagePath = models.CharField(max_length=100)
+    pagePathPlusQueryString = models.CharField(max_length=200)
+    pageTitle = models.CharField(max_length=100)
+    startDate = models.CharField(max_length=50)
+    endDate = models.CharField(max_length=50)
