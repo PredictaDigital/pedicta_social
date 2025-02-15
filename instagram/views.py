@@ -307,7 +307,7 @@ class FetchSocialMediaInsightsView(APIView):
         end_time = time.time()  # End the timer
         execution_time = end_time - start_time  # Calculate total execution time
 
-        If no data is returned, handle it gracefully
+        
         if not instagram_data and not instagram_Page_insigths and not instagram_Page_statitsics:
             return Response({"message": "No data available"}, status=status.HTTP_204_NO_CONTENT)
 

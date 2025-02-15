@@ -23,4 +23,5 @@ urlpatterns = [
     path('linkedin/', include('linkedin_app.urls')),
     path('facebook_app/', include('facebook_app.urls')),
     path('instagram/', include('instagram.urls')),
+    path('google/', include('google_app.urls')),
 ]

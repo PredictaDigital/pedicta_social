@@ -30,7 +30,8 @@ INSTALLED_APPS = [
     'facebook_app',
     'social_auth',
     'linkedin_app',
-    'instagram'
+    'instagram',
+    'google_app',
 ]
 
 MIDDLEWARE = [
