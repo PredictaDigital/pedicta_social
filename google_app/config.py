@@ -20,5 +20,6 @@ SQL_USER = ''
 SQL_PASSWORD = ''
 
 # Path
-USET_PATH_OAUTH = os.path.join(BASE_DIR, 'oauth', 'client_secret_predicta.json')
+# USET_PATH_OAUTH = os.path.join(BASE_DIR, 'oauth', 'client_secret_predicta.json')
 
+USET_PATH_OAUTH=''
