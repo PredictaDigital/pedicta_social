@@ -2,6 +2,7 @@ from django.db import models
 import requests
 from social_auth.models import BaseModel,SocialUser
 
+
 class InstagramMediaInsight(BaseModel):
     ig_id = models.CharField(max_length=50, unique=True, verbose_name="Instagram Post ID")
     post_date = models.CharField(max_length=100, null=True, blank=True, verbose_name="Post Date")  # Stored as text
@@ -34,7 +35,7 @@ class InstagramMediaInsight(BaseModel):
     data_created_date = models.CharField(max_length=255, null=True, blank=True)
     data_created_time = models.CharField(max_length=255, null=True, blank=True)
 
-    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Media_Insights', on_delete=models.CASCADE)
+    # social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Media_Insights', on_delete=models.CASCADE)
 
 
     class Meta:
@@ -50,7 +51,7 @@ class InstagramPageInsight(BaseModel):
     email = models.EmailField(max_length=254, null=True, blank=True)  # Email of the user
     data_created_date = models.DateField(auto_now_add=True)  # Date when data was created
     data_created_time = models.TimeField(auto_now_add=True)  # Time when data was created
-    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Page_Insight', on_delete=models.CASCADE)
+    # social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Page_Insight', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Instagram_Page_Insight'
@@ -70,10 +71,11 @@ class InstagramPageStatisticsLifetime(BaseModel):
     email = models.EmailField(max_length=254, null=True, blank=True)  # Email of the user
     data_created_date = models.DateField(auto_now_add=True)  # Date when data was created
     data_created_time = models.TimeField(auto_now_add=True)  # Time when data was created
-    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Page_Statistics_Lifetime', on_delete=models.CASCADE)
+    # social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Page_Statistics_Lifetime', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Instagram_Page_Statistics_Lifetime'
+
 
 
 
