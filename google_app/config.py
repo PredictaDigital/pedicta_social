@@ -1,5 +1,8 @@
 
+import os
+from django.conf import settings
 
+BASE_DIR = settings.BASE_DIR
 
 
 PROPERTY_ID = '368891428'   # Predicta account
@@ -16,7 +19,6 @@ SQL_DATABASE = ''
 SQL_USER = ''
 SQL_PASSWORD = ''
 
-
 # Path
-USET_PATH_OAUTH = 'ga4_data/oauth/client_secret_predicta.json'
+USET_PATH_OAUTH = os.path.join(BASE_DIR, 'oauth', 'client_secret_predicta.json')
 

@@ -32,9 +32,9 @@ class GA4DataAPIView(APIView):
             data_webpage = extract_GA4_webpage_data(creds)
 
             # Save to Predicta Database
-            insert_data_to_db(data_sessions,'Session') if not data_sessions.empty else logging.warning("No Session-data fetched from GA4.")
-            insert_data_to_db(data_event,'Event') if not data_event.empty else logging.warning("No Event-data fetched from GA4.")
-            insert_data_to_db(data_webpage,'WebPage') if not data_webpage.empty else logging.warning("No Web-Page-data fetched from GA4.")
+            insert_data_to_google_app_tables(data_sessions, GA4Session) if not data_sessions.empty else logging.warning("No Session-data fetched from GA4.")
+            insert_data_to_google_app_tables(data_event, GA4Event) if not data_event.empty else logging.warning("No Event-data fetched from GA4.")
+            insert_data_to_google_app_tables(data_webpage,GA4WebPage) if not data_webpage.empty else logging.warning("No Web-Page-data fetched from GA4.")
 
 
 
