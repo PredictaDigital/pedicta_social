@@ -33,7 +33,7 @@ class FacebookOAuth(APIView):
         )
 
         # Dynamically set the redirect URI (use environment or settings)
-        redirect_uri = "http://localhost:8000/facebook_app/callback"  # Adjust to your callback URL
+        redirect_uri = "http://api.predictaanalytics.io:8000/facebook_app/callback"  # Adjust to your callback URL
         scope = "email,pages_show_list,pages_manage_metadata,ads_management,ads_read,business_management,instagram_basic"  # Include Instagram and Business permissions
 
         # Create the authorization URL for Facebook OAuth
