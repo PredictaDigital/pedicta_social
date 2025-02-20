@@ -10,6 +10,8 @@ from social_auth.models import SocialUser
 from dotenv import load_dotenv
 import os
 import requests
+import urllib.parse
+
 # Load environment variables from .env file
 load_dotenv()
 LINKEDIN_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID")
@@ -71,14 +73,15 @@ class LinkedinLoginView(APIView):
 
         if not email:
             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        encoded_email = urllib.parse.quote(email)
         auth_url = (
             f"{LINKEDIN_AUTH_URL}?"
             f"response_type=code&"
             f"client_id={LINKEDIN_CLIENT_ID}&"
             f"redirect_uri={LINKEDIN_REDIRECT_URI}&"
             f"scope=r_emailaddress&"
-            f"state={email}"  # Pass email in state parameter
+            f"state={encoded_email}"  # Pass email in state parameter
         )
 
         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
@@ -87,13 +90,14 @@ class LinkedinCallbackView(APIView):
     def get(self, request):
         """Handle LinkedIn Callback"""
         code = request.GET.get("code")
-        email = request.GET.get("state")  # Retrieve email from state parameter
+        encoded_email = request.GET.get("state")  # Retrieve email from state parameter
 
         if not code:
             return Response({"error": "Authorization code is missing"}, status=status.HTTP_400_BAD_REQUEST)
         if not email:
             return Response({"error": "Email is missing in callback"}, status=status.HTTP_400_BAD_REQUEST)
-
+        
+        email = urllib.parse.unquote(encoded_email)
         # Exchange Code for Access Token
         token_data = {
             "grant_type": "authorization_code",
