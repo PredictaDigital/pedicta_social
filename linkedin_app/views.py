@@ -17,7 +17,6 @@ LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET")
 LINKEDIN_REDIRECT_URI = os.getenv("LINKEDIN_REDIRECT_URI")
 LINKEDIN_AUTH_URL = os.getenv("LINKEDIN_AUTH_URL")
 LINKEDIN_TOKEN_URL = os.getenv("LINKEDIN_TOKEN_URL")
-LINKEDIN_EMAIL_URL = os.getenv("LINKEDIN_EMAIL_URL")
 
 class LinkedinAPIView(APIView):
     def get(self, request, format=None):
@@ -67,22 +66,33 @@ class LinkedinAuthCreateView(generics.CreateAPIView):
 
 class LinkedinLoginView(APIView):
     def get(self, request):
-        """Generate LinkedIn Login URL"""
+        """Generate LinkedIn Login URL with Email Query Parameter"""
+        email = request.query_params.get("email")
+
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         auth_url = (
             f"{LINKEDIN_AUTH_URL}?"
             f"response_type=code&"
             f"client_id={LINKEDIN_CLIENT_ID}&"
             f"redirect_uri={LINKEDIN_REDIRECT_URI}&"
-            f"scope=r_emailaddress"
+            f"scope=r_emailaddress&"
+            f"state={email}"  # Pass email in state parameter
         )
+
         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
 
 class LinkedinCallbackView(APIView):
     def get(self, request):
         """Handle LinkedIn Callback"""
-        code = request.GET.get('code')
+        code = request.GET.get("code")
+        email = request.GET.get("state")  # Retrieve email from state parameter
+
         if not code:
             return Response({"error": "Authorization code is missing"}, status=status.HTTP_400_BAD_REQUEST)
+        if not email:
+            return Response({"error": "Email is missing in callback"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Exchange Code for Access Token
         token_data = {
@@ -101,16 +111,6 @@ class LinkedinCallbackView(APIView):
         access_token = token_json.get("access_token")
         expires_in = token_json.get("expires_in")
 
-        # Fetch LinkedIn Email
-        headers = {"Authorization": f"Bearer {access_token}"}
-        email_response = requests.get(LINKEDIN_EMAIL_URL, headers=headers)
-
-        if email_response.status_code != 200:
-            return Response({"error": "Failed to retrieve LinkedIn email"}, status=status.HTTP_400_BAD_REQUEST)
-
-        email_data = email_response.json()
-        email = email_data["elements"][0]["handle~"]["emailAddress"]
-
         # Save or Update User & Auth Data
         social_user, _ = SocialUser.objects.get_or_create(email=email)
         LinkedinAuth.objects.update_or_create(
@@ -126,3 +126,5 @@ class LinkedinCallbackView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
