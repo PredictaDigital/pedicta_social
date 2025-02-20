@@ -2,6 +2,10 @@ from django.db import models
 import requests
 from social_auth.models import BaseModel,SocialUser
 
+# InstagramMediaInsight = 0
+# InstagramPageInsight = 0
+# InstagramPageStatisticsLifetime = 0
+
 
 class InstagramMediaInsight(BaseModel):
     ig_id = models.CharField(max_length=50, unique=True, verbose_name="Instagram Post ID")
@@ -15,7 +19,7 @@ class InstagramMediaInsight(BaseModel):
     caption = models.TextField(null=True, blank=True, verbose_name="Caption")
     media_product_type = models.CharField(max_length=100, null=True, blank=True, verbose_name="Media Product Type")
     is_comment_enabled = models.CharField(max_length=10, default="True", verbose_name="Comments Enabled", null=True, blank=True)  # Stored as "True"/"False"
-    media_url = models.CharField(max_length=500, null=True, blank=True, verbose_name="Media URL")
+    media_url = models.CharField(max_length=3000, null=True, blank=True, verbose_name="Media URL")
 
     # Insights (Stored as text)
     impressions = models.CharField(max_length=20, default="0", verbose_name="Impressions", null=True, blank=True)
@@ -51,7 +55,7 @@ class InstagramPageInsight(BaseModel):
     email = models.EmailField(max_length=254, null=True, blank=True)  # Email of the user
     data_created_date = models.DateField(auto_now_add=True)  # Date when data was created
     data_created_time = models.TimeField(auto_now_add=True)  # Time when data was created
-    # social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Page_Insight', on_delete=models.CASCADE)
+    social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_Instagram_Page_Insight', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'Instagram_Page_Insight'

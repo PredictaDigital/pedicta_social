@@ -1,6 +1,18 @@
 from django.db import models
 from social_auth.models import BaseModel,SocialUser
 
+
+
+
+# FacebookInsights = 0
+# FBAdsInsight = 0
+# FBAdsInsightAgeGender = 0
+# FBAdsInsightByDevice = 0
+# FBAdsInsightByLocation = 0
+# FacebookCampaignInsight = 0
+# FacebookFollowersInsight = 0
+# FacebookFollowersbycity = 0
+
 class FBAdsInsight(BaseModel):
     email = models.EmailField(max_length=50)
     account_id = models.CharField(max_length=50)
@@ -216,6 +228,7 @@ class FacebookFollowersbycity(BaseModel):
         db_table = 'FB_Followers_by_city'  # Table name in the database
 
 
+
 # Facebook Insight
 class FacebookInsights(BaseModel):
     page_id = models.CharField(max_length=255)  # Page ID as a string
@@ -255,17 +268,19 @@ class FacebookInsights(BaseModel):
         db_table = 'FB_Insights'  # Table name in the database
 
 
+
+
 class FB_Oauth(BaseModel):
     access_token = models.TextField(null=True, blank=True,)
     page_id = models.CharField(max_length=255,null=True,blank=True)
     instagram_account = models.CharField(max_length=255,null=True,blank=True)
-    business_profiles = models.JSONField(null=True,blank=True)
+    business_profiles = models.CharField(max_length=255,null=True,blank=True)
     ad_accounts = models.CharField(max_length=255,null=True,blank=True)  # Ensure this is a CharField
     social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Oauth', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'FB_Oauth'  # Custom table name
-    
+
     # @classmethod
     # def get_latest_token_by_email(cls, email):
     #     """
