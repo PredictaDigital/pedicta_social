@@ -257,10 +257,10 @@ class FacebookInsights(BaseModel):
 
 class FB_Oauth(BaseModel):
     access_token = models.TextField(null=True, blank=True,)
-    page_id = models.CharField(max_length=255)
-    instagram_account = models.CharField(max_length=255)
-    business_profiles = models.JSONField()
-    ad_accounts = models.CharField(max_length=255)  # Ensure this is a CharField
+    page_id = models.CharField(max_length=255,null=True,blank=True)
+    instagram_account = models.CharField(max_length=255,null=True,blank=True)
+    business_profiles = models.JSONField(null=True,blank=True)
+    ad_accounts = models.CharField(max_length=255,null=True,blank=True)  # Ensure this is a CharField
     social_user = models.ForeignKey(SocialUser, null=True, blank=True, related_name='user_FB_Oauth', on_delete=models.CASCADE)
 
     class Meta:

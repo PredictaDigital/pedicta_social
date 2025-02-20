@@ -68,30 +68,30 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'predicta_api.wsgi.application'
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / "db.sqlite3",
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        # 'ENGINE': 'django_mssql_backend',
-        'ENGINE': 'mssql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),  # or IP address
-        'PORT': os.getenv('DB_PORT'),  # Default SQL Server port
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-        },
-    }
-}
+# DATABASES = {
+#     'default': {
+#         # 'ENGINE': 'django_mssql_backend',
+#         'ENGINE': 'mssql',
+#         'NAME': os.getenv('DB_NAME'),
+#         'USER': os.getenv('DB_USER'),
+#         'PASSWORD': os.getenv('DB_PASSWORD'),
+#         'HOST': os.getenv('DB_HOST'),  # or IP address
+#         'PORT': os.getenv('DB_PORT'),  # Default SQL Server port
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#         },
+#     }
+# }
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -138,24 +138,24 @@ LOG_DIR = os.path.join(BASE_DIR, 'logs')
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'ERROR',  # You can change this to DEBUG, INFO, etc., based on your need
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(LOG_DIR, 'django_errors.log'),
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',  # This ensures only error-level logs are captured
-            'propagate': True,
-        },
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'file': {
+#             'level': 'ERROR',  # You can change this to DEBUG, INFO, etc., based on your need
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(LOG_DIR, 'django_errors.log'),
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],
+#             'level': 'ERROR',  # This ensures only error-level logs are captured
+#             'propagate': True,
+#         },
+#     },
+# }
 
 
 # LINKEDIN_API_URL = "https://api.linkedin.com"

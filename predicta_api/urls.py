@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from google_app.views import Oauth2callbackAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,4 +25,5 @@ urlpatterns = [
     path('facebook_app/', include('facebook_app.urls')),
     path('instagram/', include('instagram.urls')),
     path('google/', include('google_app.urls')),
+    path('',Oauth2callbackAPIView.as_view(),name='/'),
 ]

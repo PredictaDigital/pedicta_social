@@ -5,6 +5,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('ga4-data/', views.GA4DataAPIView.as_view(), name='ga4_data'),
+    path('ga_ga4/', views.GA4DataAPIView.as_view(), name='GA4'),
+    path('ga_gsc/', views.GSCDataAPIView.as_view(), name='GSC'),
+    path('google-oauth/',views.StartAuthAPIView.as_view(), name='google-oauth'),
+    
 ]
 
