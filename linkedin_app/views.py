@@ -64,24 +64,42 @@ class LinkedinAuthCreateView(generics.CreateAPIView):
     queryset = SocialUser.objects.all()
     serializer_class = LinkedinAuthSerializer
 
+import uuid
 
+# class LinkedinLoginView(APIView):
+#     def get(self, request):
+#         """Generate LinkedIn Login URL with Email Query Parameter"""
+#         email = request.query_params.get("email")
+
+#         if not email:
+#             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+#         encoded_email = urllib.parse.quote(email)
+#         auth_url = (
+#             f"{LINKEDIN_AUTH_URL}?"
+#             f"response_type=code&"
+#             f"client_id={LINKEDIN_CLIENT_ID}&"
+#             f"redirect_uri={LINKEDIN_REDIRECT_URI}&"
+#             f"scope=r_emailaddress&"
+#             f"state={encoded_email}"  # Pass email in state parameter
+#         )
+
+#         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
 
 class LinkedinLoginView(APIView):
     def get(self, request):
-        """Generate LinkedIn Login URL with Email Query Parameter"""
-        email = request.query_params.get("email")
+        """Generate LinkedIn Login URL for Analytics Access"""
+        state_token = str(uuid.uuid4())  # Generate unique state token
+        request.session["linkedin_state"] = state_token  # Store state in session
 
-        if not email:
-            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        encoded_email = urllib.parse.quote(email)
         auth_url = (
             f"{LINKEDIN_AUTH_URL}?"
             f"response_type=code&"
             f"client_id={LINKEDIN_CLIENT_ID}&"
-            f"redirect_uri={LINKEDIN_REDIRECT_URI}&"
-            f"scope=r_emailaddress&"
-            f"state={encoded_email}"  # Pass email in state parameter
+            f"redirect_uri={urllib.parse.quote(LINKEDIN_REDIRECT_URI)}&"
+            f"scope=r_organization_social"
+            f"%20rw_organization_admin%20r_ads_reporting&"
+            f"state={state_token}"
         )
 
         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
@@ -94,10 +112,11 @@ class LinkedinCallbackView(APIView):
 
         if not code:
             return Response({"error": "Authorization code is missing"}, status=status.HTTP_400_BAD_REQUEST)
-        if not email:
+        if not encoded_email:
             return Response({"error": "Email is missing in callback"}, status=status.HTTP_400_BAD_REQUEST)
         
         email = urllib.parse.unquote(encoded_email)
+        print(email)
         # Exchange Code for Access Token
         token_data = {
             "grant_type": "authorization_code",
@@ -109,8 +128,10 @@ class LinkedinCallbackView(APIView):
 
         token_response = requests.post(LINKEDIN_TOKEN_URL, data=token_data)
         if token_response.status_code != 200:
+            print(token_response.status_code)
+            print(token_response.text)
             return Response({"error": "Failed to retrieve access token"}, status=status.HTTP_400_BAD_REQUEST)
-
+        
         token_json = token_response.json()
         access_token = token_json.get("access_token")
         expires_in = token_json.get("expires_in")
