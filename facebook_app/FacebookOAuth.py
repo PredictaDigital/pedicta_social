@@ -9,7 +9,7 @@ from datetime import timedelta
 import requests
 import os
 from urllib.parse import urlencode
-
+from social_auth.models import SocialUser
 
 class FacebookOAuth(APIView):
     def get(self, request):
@@ -18,6 +18,9 @@ class FacebookOAuth(APIView):
         email = request.query_params.get('email')
         if not email:
             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not SocialUser.objects.filter(email=email).exists():
+            return Response({"error": "Email not exist in database"}, status=status.HTTP_400_BAD_REQUEST)
         # Set the email in a cookie for future use
         response = Response({"message": "Redirecting to Facebook OAuth"})
         redirect_uri = os.getenv('FB_REDIRECT_URL')  # Adjust to your callback URL

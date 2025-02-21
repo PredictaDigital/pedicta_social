@@ -64,33 +64,17 @@ class LinkedinAuthCreateView(generics.CreateAPIView):
     queryset = SocialUser.objects.all()
     serializer_class = LinkedinAuthSerializer
 
-import uuid
-
-# class LinkedinLoginView(APIView):
-#     def get(self, request):
-#         """Generate LinkedIn Login URL with Email Query Parameter"""
-#         email = request.query_params.get("email")
-
-#         if not email:
-#             return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-#         encoded_email = urllib.parse.quote(email)
-#         auth_url = (
-#             f"{LINKEDIN_AUTH_URL}?"
-#             f"response_type=code&"
-#             f"client_id={LINKEDIN_CLIENT_ID}&"
-#             f"redirect_uri={LINKEDIN_REDIRECT_URI}&"
-#             f"scope=r_emailaddress&"
-#             f"state={encoded_email}"  # Pass email in state parameter
-#         )
-
-#         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
 
 class LinkedinLoginView(APIView):
     def get(self, request):
-        """Generate LinkedIn Login URL for Analytics Access"""
-        state_token = str(uuid.uuid4())  # Generate unique state token
-        request.session["linkedin_state"] = state_token  # Store state in session
+        email = request.query_params.get("email")
+        if not email:
+            return Response({"error": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not SocialUser.objects.filter(email=email).exists():
+            return Response({"error": "Email not exist in database"}, status=status.HTTP_400_BAD_REQUEST)
+
+        encoded_email = urllib.parse.quote(email)
 
         auth_url = (
             f"{LINKEDIN_AUTH_URL}?"
@@ -99,7 +83,7 @@ class LinkedinLoginView(APIView):
             f"redirect_uri={urllib.parse.quote(LINKEDIN_REDIRECT_URI)}&"
             f"scope=r_organization_social"
             f"%20rw_organization_admin%20r_ads_reporting&"
-            f"state={state_token}"
+            f"state={encoded_email}"
         )
 
         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
@@ -135,12 +119,14 @@ class LinkedinCallbackView(APIView):
         token_json = token_response.json()
         access_token = token_json.get("access_token")
         expires_in = token_json.get("expires_in")
+        refresh_token = token_json.get("refresh_token")  # Get refresh token
+
 
         # Save or Update User & Auth Data
         social_user, _ = SocialUser.objects.get_or_create(email=email)
         LinkedinAuth.objects.update_or_create(
             social_user=social_user,
-            defaults={"access_token": access_token, "expires_in": expires_in},
+            defaults={"access_token": access_token, "expires_in": expires_in, "refresh_token":refresh_token},
         )
 
         return Response(
