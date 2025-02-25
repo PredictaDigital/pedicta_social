@@ -229,7 +229,10 @@ class LinkMetaPages(APIView):
                     "instagram_error_message": instagram_error_message,
                 }
                 # Return the response with the data variable
-                return Response(error_dict, status=status.HTTP_200_OK)
+                return Response({
+                    "data": datafb,
+                    "errors": error_dict
+                }, status=status.HTTP_200_OK)
         # Return both the gathered data and error messages
         return Response({
             "data": datafb,  # Contains access token, page_id, Instagram account, business profiles, and ad accounts
