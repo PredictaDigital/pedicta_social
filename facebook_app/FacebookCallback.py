@@ -11,10 +11,15 @@ class FacebookCallback(APIView):
         if not code:
             return Response({"error": "Authorization code not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Retrieve the email from the cookie
-        email = request.COOKIES.get('email')
+        state_param = request.GET.get("state")
+        if not state_param:
+            return Response({"error": "Missing state"}, status=status.HTTP_400_BAD_REQUEST)
+        # Decode the email from state
+        state_data = parse_qs(state_param)
+        email = state_data.get("email", [None])[0]
+
         if not email:
-            return Response({"error": "Email not found in cookie"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Email not found in state"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Step 2: Set up your Facebook App credentials
         client_id = "385745461007462"  # Your Facebook App ID
