@@ -4,7 +4,7 @@ from django.urls import path
 # from .views import GetAdAccountUsers
 from .views import FacebookAuthCreateView
 from .FacebookOAuth import FacebookOAuth,GetLatestTokenView
-from .FacebookCallback import FacebookCallback,LinkMetaPages
+from .FacebookCallback import FacebookCallback
 # from .CustomerData import CustomerData
 # from .FB_get_token import RetrieveFBDetailsView
 # from .FB_Ads_Insights import FetchAdInsightsView
@@ -22,7 +22,7 @@ urlpatterns = [
     path('facebook-api/', FacebookAPIHandler.as_view(), name='facebook_api'),
     path('facebook_oauth/', FacebookOAuth.as_view(), name='facebook_oauth'),
     path('callback/', FacebookCallback.as_view(), name='facebook_callback'),
-    path('link_meta_pages/', LinkMetaPages.as_view(), name='link_meta_pages'),
+    # path('link_meta_pages/', LinkMetaPages.as_view(), name='link_meta_pages'),
     # path('customer/<str:email>/', CustomerData.as_view(), name='get_customer_data_by_email'),
     # path('get_ad_account_users/', GetAdAccountUsers.as_view(), name='get_ad_account_users'),
     # path('get-token/', RetrieveFBDetailsView.as_view(), name='get_latest_token'),
