@@ -230,5 +230,9 @@ class LinkMetaPages(APIView):
                 }
                 # Return the response with the data variable
                 return Response(error_dict, status=status.HTTP_200_OK)
-        return Response({"error": "Failed to fetch page ID"}, status=pages_response.status_code)
+        # Return both the gathered data and error messages
+        return Response({
+            "data": datafb,  # Contains access token, page_id, Instagram account, business profiles, and ad accounts
+            "errors": error_dict  # Contains error messages (if any)
+        }, status=status.HTTP_200_OK)
 
