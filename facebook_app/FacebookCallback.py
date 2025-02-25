@@ -25,7 +25,7 @@ class FacebookCallback(APIView):
         # Step 2: Set up your Facebook App credentials
         client_id = "385745461007462"  # Your Facebook App ID
         client_secret = "39838a1fd0b95af866f368acc81f77b0"  # Your Facebook App Secret
-        redirect_uri = "https://api.predictaanalytics.io/facebook_app/callback"  # Your redirect URI without email
+        redirect_uri = os.getenv('FB_REDIRECT_URL')  # Adjust to your callback URL
 
         # Step 3: Exchange the authorization code for an access token
         token_url = "https://graph.facebook.com/v22.0/oauth/access_token"
