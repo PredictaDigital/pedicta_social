@@ -8,7 +8,6 @@ from .models import FB_Oauth  # Assuming you're using a model for storing Facebo
 
 class FacebookCallback(APIView):
     def get(self, request):
-        # Step 1: Get the authorization code from the query parameters
         code = request.query_params.get("code")
         if not code:
             return Response({"error": "Authorization code not provided"}, status=status.HTTP_400_BAD_REQUEST)
@@ -16,19 +15,17 @@ class FacebookCallback(APIView):
         state_param = request.GET.get("state")
         if not state_param:
             return Response({"error": "Missing state"}, status=status.HTTP_400_BAD_REQUEST)
-        # Decode the email from state
+
         state_data = parse_qs(state_param)
         email = state_data.get("email", [None])[0]
 
         if not email:
             return Response({"error": "Email not found in state"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Step 2: Set up your Facebook App credentials
-        client_id = "385745461007462"  # Your Facebook App ID
-        client_secret = "39838a1fd0b95af866f368acc81f77b0"  # Your Facebook App Secret
-        redirect_uri = os.getenv('FB_REDIRECT_URL')  # Adjust to your callback URL
+        client_id = "385745461007462"
+        client_secret = "39838a1fd0b95af866f368acc81f77b0"
+        redirect_uri = os.getenv('FB_REDIRECT_URL')
 
-        # Step 3: Exchange the authorization code for an access token
         token_url = "https://graph.facebook.com/v22.0/oauth/access_token"
         params = {
             "client_id": client_id,
@@ -46,143 +43,84 @@ class FacebookCallback(APIView):
         if response.status_code == 200:
             access_token = response_data.get("access_token")
 
-            # Step 4: Fetch the user's Facebook pages using the access token
             pages_url = "https://graph.facebook.com/v22.0/me/accounts"
-            pages_params = {
-                "access_token": access_token,
-            }
-
+            pages_params = {"access_token": access_token}
             pages_response = requests.get(pages_url, params=pages_params)
             try:
                 pages_data = pages_response.json()
             except ValueError:
                 return Response({"error": "Invalid JSON response from Facebook for pages"}, status=pages_response.status_code)
 
-            if pages_response.status_code == 200:
-                # Step 5: Get the first page ID (if available)
-                page_id = None
-                page_access_token = None
-                if "data" in pages_data:
-                    page = pages_data["data"][0]  # Assuming the first page is selected
-                    page_id = page.get("id")
-                    page_access_token = page.get("access_token")  # Fetch the Page Access Token
+            page_id = None
+            page_access_token = None
+            if "data" in pages_data and pages_data["data"]:
+                page = pages_data["data"][0]  # Assuming the first page is selected
+                page_id = page.get("id")
+                page_access_token = page.get("access_token")
 
-                if not page_access_token:
-                    return Response({"error": "Page access token not found"}, status=status.HTTP_400_BAD_REQUEST)
+            business_url = "https://graph.facebook.com/v22.0/me/businesses"
+            business_params = {"access_token": access_token}
+            business_response = requests.get(business_url, params=business_params)
+            try:
+                business_data = business_response.json()
+            except ValueError:
+                return Response({"error": "Invalid JSON response from Facebook for business profiles"}, status=business_response.status_code)
 
-                # Step 6: Fetch the user's business profiles using the User Access Token
-                business_url = "https://graph.facebook.com/v22.0/me/businesses"
-                business_params = {
-                    "access_token": access_token,  # Using User Access Token
-                }
+            business_profiles = []
+            ad_accounts = {}
+            if "data" in business_data:
+                for business in business_data["data"]:
+                    business_id = business.get("id")
+                    business_profiles.append(business_id)
 
-                business_response = requests.get(business_url, params=business_params)
-                try:
-                    business_data = business_response.json()
-                except ValueError:
-                    return Response({"error": "Invalid JSON response from Facebook for business profiles"}, status=business_response.status_code)
-
-                if business_response.status_code == 200:
-                    # Step 7: Get the business profiles (if available)
-                    business_profiles = []
-                    ad_accounts = {}  # To store ad accounts associated with each business
-                    if "data" in business_data:
-                        for business in business_data["data"]:
-                            business_id = business.get("id")
-                            business_profiles.append(business_id)  # Collect all business profile IDs
-
-                            # Fetch ad accounts for each business
-                            ad_accounts_url = f"https://graph.facebook.com/v22.0/{business_id}/adaccounts"
-                            ad_accounts_params = {
-                                "access_token": access_token,
-                            }
-
-                            ad_accounts_response = requests.get(ad_accounts_url, params=ad_accounts_params)
-                            try:
-                                ad_accounts_data = ad_accounts_response.json()
-                            except ValueError:
-                                return Response({"error": "Invalid JSON response from Facebook for ad accounts"}, status=ad_accounts_response.status_code)
-
-                            if ad_accounts_response.status_code == 200:
-                                ad_accounts[business_id] = [ad.get("id") for ad in ad_accounts_data.get("data", [])]
-                            else:
-                                ad_accounts[business_id] = []
-
-                    # Fetch additional ad accounts and business info
-                    adaccounts_url = "https://graph.facebook.com/v22.0/me?fields=adaccounts{business}"
-                    adaccounts_params = {
-                        "access_token": access_token,
-                    }
-
-                    adaccounts_response = requests.get(adaccounts_url, params=adaccounts_params)
+                    ad_accounts_url = f"https://graph.facebook.com/v22.0/{business_id}/adaccounts"
+                    ad_accounts_params = {"access_token": access_token}
+                    ad_accounts_response = requests.get(ad_accounts_url, params=ad_accounts_params)
                     try:
-                        adaccounts_data = adaccounts_response.json()
+                        ad_accounts_data = ad_accounts_response.json()
                     except ValueError:
-                        return Response({"error": "Invalid JSON response from Facebook for additional ad accounts"}, status=adaccounts_response.status_code)
+                        return Response({"error": "Invalid JSON response from Facebook for ad accounts"}, status=ad_accounts_response.status_code)
 
-                    if adaccounts_response.status_code == 200:
-                        additional_ad_accounts = adaccounts_data.get("adaccounts", {}).get("data", [])
-                        for ad_account in additional_ad_accounts:
-                            business_info = ad_account.get("business", {})
-                            if business_info:
-                                ad_accounts.setdefault(business_info.get("id"), []).append(ad_account.get("id"))
+                    ad_accounts[business_id] = [ad.get("id") for ad in ad_accounts_data.get("data", [])] if ad_accounts_response.status_code == 200 else []
 
-                    # Print the business and ad account data (for debugging)
-                    print("Business Profiles:", business_profiles)
-                    print("Ad Accounts:", ad_accounts)
+            instagram_url = f"https://graph.facebook.com/v22.0/{page_id}"
+            instagram_params = {"fields": "instagram_business_account", "access_token": page_access_token}
+            instagram_response = requests.get(instagram_url, params=instagram_params)
+            try:
+                instagram_data = instagram_response.json()
+            except ValueError:
+                return Response({"error": "Invalid JSON response from Facebook for Instagram ID"}, status=instagram_response.status_code)
 
-                    # Step 8: Fetch the Instagram account connected to the page
-                    instagram_url = f"https://graph.facebook.com/v22.0/{page_id}"
-                    instagram_params = {
-                        "fields": "instagram_business_account",
-                        "access_token": page_access_token,  # Use the Page Access Token
-                    }
+            instagram_account = instagram_data.get("instagram_business_account", {}).get("id") if instagram_response.status_code == 200 else None
 
-                    instagram_response = requests.get(instagram_url, params=instagram_params)
-                    try:
-                        instagram_data = instagram_response.json()
-                    except ValueError:
-                        return Response({"error": "Invalid JSON response from Facebook for Instagram ID"}, status=instagram_response.status_code)
+            # Extract first ad account ID if available
+            ad_account_id = None
+            if business_profiles:
+                first_business_id = business_profiles[0]
+                ad_account_list = ad_accounts.get(first_business_id, [])
+                if ad_account_list:
+                    ad_account_id = ad_account_list[0].strip('"')
 
-                    if instagram_response.status_code == 200:
-                        instagram_account = instagram_data.get("instagram_business_account", {}).get("id")
-                    else:
-                        instagram_account = None
-                
-                  # Create the datafb dictionary
-                    datafb = {
-                        "access_token": access_token,
-                        "page_id": page_id,
-                        "instagram_account": instagram_account,  # Add Instagram account ID
-                        "business_profiles": business_profiles,
-                        "ad_accounts": ad_accounts,  # Return the ad accounts for each business
-                        "email": email  # Return the email for association
-                    }
+            # Store in the database
+            data = FB_Oauth(
+                access_token=access_token,
+                page_id=page_id,
+                instagram_account=instagram_account,
+                business_profiles=business_profiles,
+                ad_accounts=ad_account_id,
+                social_user_id=email
+            )
+            data.save()
 
-                    # Extract ad_accounts from datafb
-                    ad_accounts = datafb.get("ad_accounts", {})
-                    # business_id = "167384841988076"  # The business ID we want to check
-                    ad_account_list = ad_accounts.get(business_id, [])
-                    ad_account_id = ad_account_list[0]
-                    ad_account_id = ad_account_id.strip('"')
+            # Construct the final response
+            datafb = {
+                "access_token": bool(access_token),
+                "page_id": bool(page_id),
+                "instagram_account": bool(instagram_account),
+                "business_profiles": bool(business_profiles),
+                "ad_accounts": bool(ad_accounts)
+            }
 
-                    # Insert data dynamically into the database
-                    data = FB_Oauth(
-                        access_token=access_token,
-                        page_id=page_id,
-                        instagram_account=instagram_account,
-                        business_profiles=business_profiles,
-                        ad_accounts=ad_account_id,
-                        social_user_id=email
-                    )
-                    data.save()
-
-                    # Return the response with the data variable
-                    return Response(datafb, status=status.HTTP_200_OK)
-
-
-                return Response({"error": business_data.get('error', 'Failed to fetch business profiles')}, status=business_response.status_code)
-
-            return Response({"error": pages_data.get('error', 'Failed to fetch page ID')}, status=pages_response.status_code)
+            return Response(datafb, status=status.HTTP_200_OK)
 
         return Response({"error": response_data.get('error', 'Failed to fetch access token')}, status=response.status_code)
