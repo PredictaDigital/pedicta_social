@@ -43,7 +43,7 @@ def fetch_and_insert_linkedin_country_data(access_token):
 
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception("Failed to fetch data from LinkedIn API")
+        return {"success": False, "error": response.json()['message']}
 
     analytics_data = response.json()
     user = get_social_user_from_token(access_token)
@@ -84,7 +84,7 @@ def fetch_and_insert_linkedin_country_group_data(access_token):
 
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception("Failed to fetch data from LinkedIn API")
+        return {"success": False, "error": response.json()['message']}
 
     analytics_data = response.json()
     user = get_social_user_from_token(access_token)
@@ -123,8 +123,10 @@ def fetch_and_insert_linkedin_followers_data(access_token):
     }
 
     response = requests.get(analytics_url, headers=headers)
+    print(response.json()['message'],'response>>>>>>>>')
     if response.status_code != 200:
-        raise Exception("Failed to fetch data from LinkedIn API")
+        print('fgffffffffffff')
+        return {"success": False, "error": response.json()['message']}
 
     # Truncate the table
     LinkedinFollowers.objects.all().delete()
@@ -243,7 +245,7 @@ def fetch_and_insert_linkedin_followers_gain_data(access_token):
     # Retrieve data from LinkedIn API
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
+        return {"success": False, "error": response.json()['message']}
     analytics_data = response.json()
 
     user = get_social_user_from_token(access_token)
@@ -285,7 +287,7 @@ def fetch_and_insert_linkedin_functions_data(access_token):
     # Retrieve data from LinkedIn API
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
+        return {"success": False, "error": response.json()['message']}
     
     analytics_data = response.json()
 
@@ -324,7 +326,7 @@ def fetch_and_insert_linkedin_industries_data(access_token):
     # Retrieve data from LinkedIn API
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
+        return {"success": False, "error": response.json()['message']}
     
     analytics_data = response.json()
 
@@ -362,8 +364,7 @@ def fetch_and_insert_linkedin_regions_data(access_token):
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
         # Handle the error if the request fails
-        print(f"Failed to retrieve data: {response.status_code}")
-        return
+        return {"success": False, "error": response.json()['message']}
 
     analytics_data = response.json()
 
@@ -406,8 +407,7 @@ def fetch_and_insert_linkedin_seniorities_data(access_token):
     # Retrieve seniority data from LinkedIn API
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        print(f"Failed to retrieve data: {response.status_code}")
-        return
+        return {"success": False, "error": response.json()['message']}
 
     analytics_data = response.json()
 
@@ -444,7 +444,7 @@ def fetch_and_insert_linkedin_location_data(access_token):
     # Retrieve the follower counts by geo data from LinkedIn API
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
+        return {"success": False, "error": response.json()['message']}
 
     # Truncate the table
     LinkedinLocation.objects.all().delete()
@@ -510,8 +510,7 @@ def fetch_and_insert_linkedin_posts_statistics(access_token):
     # Fetch posts
     response = requests.get(posts_url, headers=headers)
     if response.status_code != 200:
-        print(f"Failed to retrieve posts: {response.status_code}")
-        return
+        return {"success": False, "error": response.json()['message']}
 
     posts_data = response.json()
 
@@ -626,7 +625,7 @@ def fetch_and_insert_linkedin_followers_gain_data_separate(access_token):
     # Retrieve data from LinkedIn API
     response = requests.get(analytics_url, headers=headers)
     if response.status_code != 200:
-        raise Exception(f'Error fetching data from LinkedIn API: {response.status_code} - {response.text}')
+        return {"success": False, "error": response.json()['message']}
     
     analytics_data = response.json()
 

@@ -31,31 +31,64 @@ class LinkedinAPIView(APIView):
             if not auth_instance or not auth_instance.access_token:
                 return Response({"error": "No LinkedIn access token found for this email"}, status=status.HTTP_404_NOT_FOUND)
             access_token = auth_instance.access_token
+
+            errors = {}
             
             print("Country_data")
-           
-            fetch_and_insert_linkedin_country_data(access_token)
+            Linkedin_Countries = fetch_and_insert_linkedin_country_data(access_token)
+            if Linkedin_Countries!=None:
+                errors["Linkedin_Countries"] = Linkedin_Countries["error"]
+
             print("Country Group Data")
-            fetch_and_insert_linkedin_country_group_data(access_token)
+            Linkedin_Country_Groups = fetch_and_insert_linkedin_country_group_data(access_token)
+            if Linkedin_Country_Groups!=None:
+                errors["Linkedin_Country_Groups"] = Linkedin_Country_Groups["error"]
+
             print("Followers Data")
-            fetch_and_insert_linkedin_followers_data(access_token)
-            print("linkedin_followers_gain_data")
-            fetch_and_insert_linkedin_followers_gain_data(access_token)
+            Linkedin_Followers = fetch_and_insert_linkedin_followers_data(access_token)
+            if Linkedin_Followers!=None:
+                errors["Linkedin_Followers"] = Linkedin_Followers["error"]
+
+            Linkedin_FollowersGain_Statistics = fetch_and_insert_linkedin_followers_gain_data(access_token)
+            if Linkedin_FollowersGain_Statistics!=None:
+                errors["Linkedin_FollowersGain_Statistics"] = Linkedin_FollowersGain_Statistics["error"]
+
             print("_linkedin_functions_data")
-            fetch_and_insert_linkedin_functions_data(access_token)
+            Linkedin_Functions = fetch_and_insert_linkedin_functions_data(access_token)
+            if Linkedin_Functions!=None:
+                errors["Linkedin_Functions"] = Linkedin_Functions["error"]
+
             print("linkedin_industries_data")
-            fetch_and_insert_linkedin_industries_data(access_token)
+            Linkedin_Industries = fetch_and_insert_linkedin_industries_data(access_token)
+            if Linkedin_Industries!=None:
+                errors["Linkedin_Industries"] = Linkedin_Industries["error"]
+
             print("_linkedin_regions_data")
-            fetch_and_insert_linkedin_regions_data(access_token)
+            Linkedin_Regions = fetch_and_insert_linkedin_regions_data(access_token)
+            if Linkedin_Regions!=None:
+                errors["Linkedin_Regions"] = Linkedin_Regions["error"]
+
             print("linkedin_seniorities_data")
-            fetch_and_insert_linkedin_seniorities_data(access_token)
+            Linkedin_Seniorities = fetch_and_insert_linkedin_seniorities_data(access_token)
+            if Linkedin_Seniorities!=None:
+                errors["Linkedin_Seniorities"] = Linkedin_Seniorities["error"]
             print("insert_linkedin_location_data")
-            fetch_and_insert_linkedin_location_data(access_token)
+
+            Linkedin_Location = fetch_and_insert_linkedin_location_data(access_token)
+            if Linkedin_Location!=None:
+                errors["Linkedin_Location"] = Linkedin_Location["error"]
             print("insert_linkedin_posts_statistics")
-            fetch_and_insert_linkedin_posts_statistics(access_token)
+
+            Linkedin_Posts_Statistics = fetch_and_insert_linkedin_posts_statistics(access_token)
+            if Linkedin_Posts_Statistics!=None:
+                errors["Linkedin_Posts_Statistics"] = Linkedin_Posts_Statistics["error"]
             print("linkedin_followers_gain_data_separate")
-            fetch_and_insert_linkedin_followers_gain_data_separate(access_token)
-            return Response({"message": "Data fetched and inserted successfully"}, status=status.HTTP_200_OK)
+
+            Linkedin_Posts_Statistics_separate = fetch_and_insert_linkedin_followers_gain_data_separate(access_token)
+            if Linkedin_Posts_Statistics_separate!=None:
+                errors["Linkedin_Posts_Statistics_separate"] = Linkedin_Posts_Statistics_separate["error"]
+
+            return Response({"success": "Data fetched and inserted successfully","error":errors}, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
